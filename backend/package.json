@@ -1,0 +1,50 @@
+{
+  "name": "digi-pocket-backend",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot -r dotenv/config src/app.ts",
+    "start": "bun run src/app.ts",
+    "worker": "bun run src/workers/peamsub.worker.ts",
+    "product-sync": "bun run src/workers/product-sync.worker.ts",
+    "deposit-worker": "bun run src/workers/deposit.worker.ts",
+    "db:push": "bunx drizzle-kit push --config=./drizzle.config.ts",
+    "test": "bun test",
+    "test:all": "bun run-tests.ts",
+    "test:auth": "bun test tests/auth.comprehensive.test.ts",
+    "test:device": "bun test tests/device-tracking.comprehensive.test.ts",
+    "test:security": "bun test tests/security.comprehensive.test.ts",
+    "test:ecommerce": "bun test tests/ecommerce.comprehensive.test.ts",
+    "test:performance": "bun test tests/performance.comprehensive.test.ts",
+    "test:legacy": "bun run-tests.ts --legacy",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "prune-prices": "bun run src/workers/prune-prices.worker.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.16.0",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^4.0.3",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.44.3",
+    "hono": "^4.5.0",
+    "ioredis": "^5.3.3",
+    "jsonwebtoken": "^9.0.0",
+    "pg": "^8.11.1",
+    "zod": "^3.23.8",
+    "pino": "^8.21.0",
+    "pino-pretty": "^10.1.0",
+    "hono-rate-limiter": "^0.4.2",
+    "@hono/swagger-ui": "^0.5.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/node": "^24.0.14",
+    "@types/pg": "^8.11.0",
+    "bun-types": "^1.2.18",
+    "drizzle-kit": "^0.31.4"
+  }
+}
