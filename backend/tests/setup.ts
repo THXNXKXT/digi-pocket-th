@@ -1,4 +1,5 @@
-import { beforeAll, afterAll, beforeEach, afterEach, expect } from 'bun:test';
+/// <reference types="bun-types" />
+import { beforeAll, afterAll, beforeEach, expect } from 'bun:test';
 import { db } from '../src/db';
 import { users, userSessions, userActivityLogs } from '../src/db/schemas/base';
 import { products } from '../src/db/schemas/product';
