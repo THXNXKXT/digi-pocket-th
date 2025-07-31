@@ -47,15 +47,7 @@ export const severityEnum = pgEnum("severity", [
   "critical"
 ]);
 
-// Order status enum
-export const orderStatusEnum = pgEnum("order_status", [
-  "pending",
-  "processing",
-  "shipped",
-  "delivered",
-  "cancelled",
-  "refunded"
-]);
+// Note: Order status enum moved to order.ts to avoid conflicts
 
 // Users table
 export const users = pgTable("users", {
@@ -122,30 +114,8 @@ export const userSessions = pgTable("user_sessions", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-// Products table
-export const products = pgTable("products", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  description: text("description"),
-  price: numeric("price", { precision: 10, scale: 2 }).notNull(),
-  stock: integer("stock").notNull().default(0),
-  isActive: boolean("is_active").notNull().default(true),
-  metadata: jsonb("metadata"),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-});
-
-// Orders table
-export const orders = pgTable("orders", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  status: orderStatusEnum("status").notNull().default("pending"),
-  totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
-  items: jsonb("items").notNull(), // Array of order items
-  shippingInfo: jsonb("shipping_info").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-});
+// Note: Products table moved to product.ts to avoid conflicts
+// Note: Orders table moved to order.ts to avoid conflicts
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -156,7 +126,4 @@ export type SecurityAlert = typeof securityAlerts.$inferSelect;
 export type NewSecurityAlert = typeof securityAlerts.$inferInsert;
 export type UserSession = typeof userSessions.$inferSelect;
 export type NewUserSession = typeof userSessions.$inferInsert;
-export type Product = typeof products.$inferSelect;
-export type NewProduct = typeof products.$inferInsert;
-export type Order = typeof orders.$inferSelect;
-export type NewOrder = typeof orders.$inferInsert;
+// Note: Product and Order types moved to their respective files to avoid conflicts

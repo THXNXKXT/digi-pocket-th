@@ -1,5 +1,7 @@
 import { db } from '../db';
-import { orders, products, users, productPrices } from '../db/schemas';
+import { users } from '../db/schemas/base';
+import { orders } from '../db/schemas/order';
+import { products, productPrices } from '../db/schemas/product';
 import { eq, and, desc, count } from 'drizzle-orm';
 import { walletService } from './wallet.service';
 import { callPeamsub } from './upstream';

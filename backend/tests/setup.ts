@@ -1,7 +1,8 @@
 import { beforeAll, afterAll, beforeEach, afterEach, expect } from 'bun:test';
 import { db } from '../src/db';
-import { users, userSessions, userActivityLogs, products, orders } from '../src/db/schemas/base';
-import { eq } from 'drizzle-orm';
+import { users, userSessions, userActivityLogs } from '../src/db/schemas/base';
+import { products } from '../src/db/schemas/product';
+import { orders } from '../src/db/schemas/order';
 
 // Test database configuration
 export const TEST_CONFIG = {
@@ -45,18 +46,18 @@ export const TEST_USERS = {
 // Test product data
 export const TEST_PRODUCTS = {
   product1: {
+    upstreamId: 'test-product-1',
+    type: 'app-premium' as const,
     name: 'Test Product 1',
     description: 'Test product description 1',
-    price: '99.99',
-    stock: 100,
-    isActive: true,
+    img: 'https://example.com/test-product-1.jpg',
   },
   product2: {
+    upstreamId: 'test-product-2',
+    type: 'game' as const,
     name: 'Test Product 2',
     description: 'Test product description 2',
-    price: '149.99',
-    stock: 50,
-    isActive: true,
+    img: 'https://example.com/test-product-2.jpg',
   },
 };
 
@@ -133,7 +134,7 @@ export class TestAPI {
     });
 
     const text = await response.text();
-    let data;
+    let data: any;
     try {
       data = JSON.parse(text);
     } catch {
