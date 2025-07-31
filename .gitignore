@@ -231,3 +231,6 @@ public/build/
 .sentry/
 analytics/
 monitoring/
+
+# Kiro AI assistant files
+.kiro/
