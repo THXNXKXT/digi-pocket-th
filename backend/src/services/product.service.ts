@@ -102,6 +102,10 @@ async function queryProducts(type: ProductType) {
     return queryMobile();
   }
 
+  if (type === 'cashcard') {
+    return queryCashcard();
+  }
+
   // default types
   const res = await db.execute(sql`
     SELECT p.*, pr.price, pr.price_vip AS "priceVip", pr.agent_price AS "agentPrice", pr.discount, pr.stock
@@ -171,6 +175,33 @@ function queryMobile() {
         LIMIT 1
       ) pr ON true
       WHERE  p.type = 'mobile'
+      ORDER  BY p.upstream_id::numeric;
+    `)
+    .then((r) => (r as any).rows);
+}
+
+/* --------------------------- CASHCARD QUERY --------------------------- */
+function queryCashcard() {
+  return db
+    .execute(sql`
+      SELECT p.id,
+             p.name,
+             p.category,
+             pr.recommended   AS "recommendedPrice",
+             pr.price,
+             pr.discount,
+             p.info,
+             p.img,
+             p.format_id
+      FROM   products p
+      JOIN LATERAL (
+        SELECT recommended, price, discount
+        FROM   product_prices
+        WHERE  product_id = p.id
+        ORDER  BY fetched_at DESC, id DESC
+        LIMIT 1
+      ) pr ON true
+      WHERE  p.type = 'cashcard'
       ORDER  BY p.upstream_id::numeric;
     `)
     .then((r) => (r as any).rows);
