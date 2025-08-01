@@ -13,7 +13,6 @@ backend/src/db/schemas/
 ├── wallet.ts         # Wallet and transactions
 ├── product.ts        # Product catalog
 ├── order.ts          # Order management
-├── deposit.ts        # Deposit system
 ├── announcement.ts   # Announcement system
 └── notification.ts   # Notification system
 ```
@@ -51,14 +50,7 @@ backend/src/db/schemas/
 - `orders` - Purchase orders
 - `orderStatusEnum` - Order status (pending, success, failed, refunded)
 
-### 5. Deposit (`deposit.ts`)
-
-**Payment deposit system**
-
-- `deposits` - Deposit records
-- `depositStatusEnum` - Deposit status (pending, success, failed)
-
-### 6. Announcement (`announcement.ts`)
+### 5. Announcement (`announcement.ts`)
 
 **Announcement/News system**
 
@@ -68,7 +60,7 @@ backend/src/db/schemas/
 - `announcementPriorityEnum` - Priority levels (low, normal, high, urgent)
 - `announcementStatusEnum` - Status (draft, published, archived, deleted)
 
-### 7. Notification (`notification.ts`)
+### 6. Notification (`notification.ts`)
 
 **Push notification system**
 
@@ -82,7 +74,6 @@ backend/src/db/schemas/
 users (1) ←→ (1) wallets
 users (1) ←→ (*) walletTransactions
 users (1) ←→ (*) orders
-users (1) ←→ (*) deposits
 users (1) ←→ (*) announcements (as creator)
 users (1) ←→ (*) announcementReads
 users (1) ←→ (*) notifications
@@ -91,6 +82,7 @@ users (1) ←→ (1) userNotificationPreferences
 products (1) ←→ (*) productPrices
 announcements (1) ←→ (*) announcementReads
 announcements (1) ←→ (*) notifications
+wallets (1) ←→ (*) walletTransactions
 ```
 
 ## Benefits of This Structure

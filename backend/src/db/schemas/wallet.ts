@@ -4,6 +4,8 @@ import {
   timestamp,
   numeric,
   pgEnum,
+  text,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { users } from "./base";
 
@@ -29,6 +31,8 @@ export const walletTransactions = pgTable("wallet_transactions", {
     .references(() => wallets.id, { onDelete: "cascade" }),
   type: txnTypeEnum("type").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  description: text("description"),
+  metadata: jsonb("metadata"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 

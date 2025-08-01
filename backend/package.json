@@ -7,8 +7,11 @@
     "start": "bun run src/app.ts",
     "worker": "bun run src/workers/peamsub.worker.ts",
     "product-sync": "bun run src/workers/product-sync.worker.ts",
-    "deposit-worker": "bun run src/workers/deposit.worker.ts",
+
     "db:push": "bunx drizzle-kit push --config=./drizzle.config.ts",
+    "db:clear": "bun run src/scripts/clear-database.ts",
+    "db:reset": "bun run src/scripts/reset-database.ts",
+    "db:fresh": "bun run db:reset && bun run db:push",
     "test": "bun test",
     "test:all": "bun run-tests.ts",
     "test:auth": "bun test tests/auth.comprehensive.test.ts",
@@ -50,9 +53,9 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/jsonwebtoken": "^9.0.2",
-    "@types/node": "^24.0.14",
+    "@types/node": "^24.1.0",
     "@types/pg": "^8.11.0",
-    "bun-types": "^1.2.18",
+    "bun-types": "^1.2.19",
     "drizzle-kit": "^0.31.4"
   }
 }

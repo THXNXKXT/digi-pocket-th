@@ -60,7 +60,10 @@ export const authService = {
         .values({ username, email, passwordHash })
         .returning();
 
-      await tx.insert(wallets).values({ userId: created.id });
+      await tx.insert(wallets).values({
+        userId: created.id,
+        balance: "0"
+      });
       return [created];
     });
 

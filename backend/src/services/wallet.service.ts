@@ -9,6 +9,23 @@ export const walletService = {
     return wallet;
   },
 
+  // Get or create wallet
+  async getOrCreateWallet(userId: string) {
+    let [wallet] = await db.select().from(wallets).where(eq(wallets.userId, userId)).limit(1);
+
+    if (!wallet) {
+      [wallet] = await db
+        .insert(wallets)
+        .values({
+          userId,
+          balance: '0'
+        })
+        .returning();
+    }
+
+    return wallet;
+  },
+
   async getBalance(userId: string) {
     const wallet = await this.getWallet(userId);
     return wallet.balance;
@@ -34,6 +51,7 @@ export const walletService = {
         walletId: wallet.id,
         type: 'deposit',
         amount: amount.toString(),
+        description: 'Manual deposit',
       });
       return newBalance;
     });
@@ -50,8 +68,11 @@ export const walletService = {
         walletId: wallet.id,
         type: 'withdraw',
         amount: amount.toString(),
+        description: 'Manual withdrawal',
       });
       return newBalance;
     });
   },
-}; 
+
+
+};
