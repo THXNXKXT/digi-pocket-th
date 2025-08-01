@@ -30,6 +30,7 @@ import {
   getOrderStatistics,
   triggerOrderCallback,
 } from '../controllers/admin/orders.controller';
+import { depositRoutes } from './admin/deposit.routes';
 
 export const adminRoute = new Hono();
 
@@ -75,3 +76,6 @@ adminRoute.post('/security/alerts/:alertId/resolve', resolveSecurityAlert);
 adminRoute.get('/security/activity', getAllActivityLogs);
 adminRoute.get('/security/config', getSecurityConfig);
 adminRoute.put('/security/config', updateSecurityConfig);
+
+// deposit management
+adminRoute.route('/deposits', depositRoutes);

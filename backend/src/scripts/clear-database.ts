@@ -5,14 +5,14 @@
  */
 
 import { db } from '../db';
-import { 
-  users, 
-  userActivityLogs, 
-  userSessions, 
+import {
+  users,
+  userActivityLogs,
+  userSessions,
   securityAlerts,
-  wallets, 
+  wallets,
   walletTransactions,
-  products, 
+  products,
   productPrices,
   orders,
   announcements,
@@ -20,6 +20,11 @@ import {
   notifications,
   userNotificationPreferences
 } from '../db/schemas';
+import {
+  storeBankAccounts,
+  depositRequests,
+  slipRecords
+} from '../db/schemas/deposit';
 
 async function clearDatabase() {
   console.log('🗑️  Starting database clear...');
@@ -61,7 +66,17 @@ async function clearDatabase() {
     
     console.log('⚙️  Clearing user notification preferences...');
     await db.delete(userNotificationPreferences);
-    
+
+    // ลบ deposit-related tables ก่อน users (เพราะมี foreign key references)
+    console.log('🧾 Clearing slip records...');
+    await db.delete(slipRecords);
+
+    console.log('💳 Clearing deposit requests...');
+    await db.delete(depositRequests);
+
+    console.log('🏦 Clearing store bank accounts...');
+    await db.delete(storeBankAccounts);
+
     console.log('👤 Clearing users...');
     await db.delete(users);
     
