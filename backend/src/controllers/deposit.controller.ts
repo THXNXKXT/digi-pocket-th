@@ -1,30 +1,30 @@
 import { Context } from 'hono';
-import { db } from '../../db';
-import { depositRequests, storeBankAccounts, slipRecords } from '../../db/schemas/deposit';
-import { wallets, walletTransactions } from '../../db/schemas/wallet';
+import { db } from '../db';
+import { depositRequests, storeBankAccounts, slipRecords } from '../db/schemas/deposit';
+import { wallets, walletTransactions } from '../db/schemas/wallet';
 import { eq, and, gte, desc } from 'drizzle-orm';
 import { 
   createDepositRequestSchema,
   uploadSlipSchema
-} from '../../types/deposit.schemas';
+} from '../types/deposit.schemas';
 import { 
   CreateDepositRequestInput,
   DepositRequestResponse,
   SlipUploadResponse,
   PendingDepositRequest
-} from '../../types/deposit.types';
+} from '../types/deposit.types';
 import { 
   DEPOSIT_REQUEST_STATUSES,
   DEPOSIT_EXPIRATION,
   DEPOSIT_ERROR_CODES
-} from '../../types/deposit.constants';
-import { ok, fail } from '../../utils/response';
-import { validateInput } from '../../utils/validation';
-import { asyncHandler } from '../../middleware/errorHandler';
-import { DepositRecoveryService } from '../../services/deposit-recovery.service';
-import { SlipVerificationService } from '../../services/slip-verification.service';
-import { walletService } from '../../services/wallet.service';
-import { env } from '../../config/env';
+} from '../types/deposit.constants';
+import { ok, fail } from '../utils/response';
+import { validateInput } from '../utils/validation';
+import { asyncHandler } from '../middleware/errorHandler';
+import { DepositRecoveryService } from '../services/deposit-recovery.service';
+import { SlipVerificationService } from '../services/slip-verification.service';
+import { walletService } from '../services/wallet.service';
+import { env } from '../config/env';
 
 const recoveryService = new DepositRecoveryService();
 const verificationService = new SlipVerificationService(

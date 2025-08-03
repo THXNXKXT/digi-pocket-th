@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth';
 import { getBalance, listTransactions, deposit, withdraw } from '../controllers/wallet.controller';
-import { depositRoutes } from './customer/deposit.routes';
+import { depositRoutes } from './deposit.routes';
 
 export const walletRoute = new Hono().use('*', authMiddleware);
 

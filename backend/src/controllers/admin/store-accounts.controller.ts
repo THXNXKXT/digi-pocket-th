@@ -137,13 +137,8 @@ export const createStoreAccount = asyncHandler(async (c: Context) => {
   await activityService.logAdminAction(
     admin.sub,
     'system',
-    'create_store_account',
-    c,
-    {
-      account_id: newAccount.id,
-      account_number: validatedData.account_number,
-      bank_name: validatedData.bank_name
-    }
+    `create_store_account_${newAccount.id}`,
+    c
   );
 
   const { body: responseBody, status } = ok('Store account created successfully', newAccount);
@@ -220,12 +215,8 @@ export const updateStoreAccount = asyncHandler(async (c: Context) => {
   await activityService.logAdminAction(
     admin.sub,
     'system',
-    'update_store_account',
-    c,
-    {
-      account_id: accountId,
-      changes: validatedData
-    }
+    `update_store_account_${accountId}`,
+    c
   );
 
   const { body: responseBody, status } = ok('Store account updated successfully', updatedAccount);
@@ -267,13 +258,8 @@ export const toggleStoreAccountStatus = asyncHandler(async (c: Context) => {
   await activityService.logAdminAction(
     admin.sub,
     'system',
-    newStatus ? 'activate_store_account' : 'deactivate_store_account',
-    c,
-    {
-      account_id: accountId,
-      previous_status: existingAccount.isActive,
-      new_status: newStatus
-    }
+    `${newStatus ? 'activate' : 'deactivate'}_store_account_${accountId}`,
+    c
   );
 
   const { body: responseBody, status: responseStatus } = ok(
@@ -314,13 +300,8 @@ export const deleteStoreAccount = asyncHandler(async (c: Context) => {
   await activityService.logAdminAction(
     admin.sub,
     'system',
-    'delete_store_account',
-    c,
-    {
-      account_id: accountId,
-      account_number: existingAccount.accountNumber,
-      bank_name: existingAccount.bankName
-    }
+    `delete_store_account_${accountId}`,
+    c
   );
 
   const { body: responseBody, status: responseStatus } = ok('Store account deleted successfully', {

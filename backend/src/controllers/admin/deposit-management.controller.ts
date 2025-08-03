@@ -1,8 +1,9 @@
 import { Context } from 'hono';
 import { db } from '../../db';
 import { depositRequests, storeBankAccounts, slipRecords } from '../../db/schemas/deposit';
-import { users, wallets } from '../../db/schemas/base';
-import { eq, and, gte, desc, count, inArray, ilike } from 'drizzle-orm';
+import { users } from '../../db/schemas/base';
+import { wallets } from '../../db/schemas/wallet';
+import { eq, and, gte, lte, desc, count, inArray, ilike } from 'drizzle-orm';
 import { 
   depositRequestFilterSchema,
   adminDepositActionSchema
@@ -30,7 +31,7 @@ export const listDepositRequests = asyncHandler(async (c: Context) => {
   const query = c.req.query();
   const validatedQuery = validateInput(depositRequestFilterSchema, query);
 
-  const { status, user_id, store_account_id, start_date, end_date, page, limit } = validatedQuery;
+  const { status, user_id, store_account_id, start_date, end_date, page = 1, limit = 20 } = validatedQuery;
   const offset = (page - 1) * limit;
 
   // Build where conditions
@@ -53,7 +54,7 @@ export const listDepositRequests = asyncHandler(async (c: Context) => {
   }
   
   if (end_date) {
-    whereConditions.push(gte(end_date, depositRequests.createdAt));
+    whereConditions.push(lte(depositRequests.createdAt, end_date));
   }
 
   const whereClause = whereConditions.length > 0 
@@ -325,15 +326,9 @@ export const approveDepositRequest = asyncHandler(async (c: Context) => {
     // Log admin action
     await activityService.logAdminAction(
       admin.sub,
-      'wallet',
-      'approve_deposit',
-      c,
-      {
-        deposit_id: depositId,
-        user_id: depositRequest.userId,
-        amount: Number(depositRequest.amount),
-        admin_notes: validatedData.admin_notes
-      }
+      depositRequest.userId,
+      `approve_deposit_${depositId}`,
+      c
     );
 
     const { body: responseBody, status: responseStatus } = ok('Deposit request approved successfully', {
@@ -415,16 +410,9 @@ export const rejectDepositRequest = asyncHandler(async (c: Context) => {
     // Log admin action
     await activityService.logAdminAction(
       admin.sub,
-      'wallet',
-      'reject_deposit',
-      c,
-      {
-        deposit_id: depositId,
-        user_id: depositRequest.userId,
-        amount: Number(depositRequest.amount),
-        rejection_reason: validatedData.rejection_reason,
-        admin_notes: validatedData.admin_notes
-      }
+      depositRequest.userId,
+      `reject_deposit_${depositId}`,
+      c
     );
 
     const { body: responseBody, status: responseStatus } = ok('Deposit request rejected successfully', {

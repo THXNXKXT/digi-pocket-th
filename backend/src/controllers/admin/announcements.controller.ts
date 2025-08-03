@@ -63,6 +63,34 @@ export async function createAnnouncement(c: Context) {
     }
 }
 
+export async function getAnnouncement(c: Context) {
+    try {
+        // Parse and validate ID parameter
+        const params = { id: c.req.param('id') };
+        const parsedParams = uuidParamSchema.safeParse(params);
+
+        if (!parsedParams.success) {
+            const resp = fail('Invalid announcement ID', 400, parsedParams.error);
+            return c.json(resp.body, resp.status as any);
+        }
+
+        const announcement = await announcementService.getAnnouncementById(parsedParams.data.id);
+
+        const resp = ok('Success', announcement);
+        return c.json(resp.body, resp.status as any);
+    } catch (error) {
+        const errorMessage = (error as Error).message;
+
+        if (errorMessage === ANNOUNCEMENT_ERROR_CODES.ANNOUNCEMENT_NOT_FOUND) {
+            const resp = fail('Announcement not found', 404);
+            return c.json(resp.body, resp.status as any);
+        }
+
+        const resp = fail('Failed to fetch announcement', 500);
+        return c.json(resp.body, resp.status as any);
+    }
+}
+
 export async function updateAnnouncement(c: Context) {
     try {
         // Parse and validate ID parameter

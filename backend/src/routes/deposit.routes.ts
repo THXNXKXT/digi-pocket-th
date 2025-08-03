@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { authMiddleware } from '../../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 import {
   getAvailableAccounts,
   createDepositRequest,
@@ -8,7 +8,7 @@ import {
   getPendingRequests,
   resumeDepositRequest,
   cancelDepositRequest
-} from '../../controllers/customer/deposit.controller';
+} from '../controllers/deposit.controller';
 
 const depositRoutes = new Hono();
 

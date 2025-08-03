@@ -30,7 +30,22 @@ import {
   getOrderStatistics,
   triggerOrderCallback,
 } from '../controllers/admin/orders.controller';
-import { depositRoutes } from './admin/deposit.routes';
+import {
+  listStoreAccounts,
+  getStoreAccount,
+  createStoreAccount,
+  updateStoreAccount,
+  toggleStoreAccountStatus,
+  deleteStoreAccount
+} from '../controllers/admin/store-accounts.controller';
+import {
+  listDepositRequests,
+  getDepositRequest,
+  approveDepositRequest,
+  rejectDepositRequest,
+  getDepositStatistics
+} from '../controllers/admin/deposit-management.controller';
+import { getAnnouncementById } from '../controllers/announcement.controller';
 
 export const adminRoute = new Hono();
 
@@ -54,13 +69,14 @@ adminRoute.delete('/products/:id', deleteProduct);
 
 // order management
 adminRoute.get('/orders', getAllOrders);
-adminRoute.get('/orders/stats', getOrderStatistics);
+adminRoute.get('/orders/statistics', getOrderStatistics);
 adminRoute.get('/orders/:id', getOrderDetails);
 adminRoute.patch('/orders/:id/status', updateOrderStatus);
 adminRoute.post('/orders/:id/callback', triggerOrderCallback);
 
 // announcement management
 adminRoute.get('/announcements', listAdminAnnouncements);
+adminRoute.get('/announcements/:id', getAnnouncementById);
 adminRoute.post('/announcements', createAnnouncement);
 adminRoute.put('/announcements/:id', updateAnnouncement);
 adminRoute.delete('/announcements/:id', deleteAnnouncement);
@@ -75,7 +91,21 @@ adminRoute.get('/security/alerts', getSecurityAlerts);
 adminRoute.post('/security/alerts/:alertId/resolve', resolveSecurityAlert);
 adminRoute.get('/security/activity', getAllActivityLogs);
 adminRoute.get('/security/config', getSecurityConfig);
-adminRoute.put('/security/config', updateSecurityConfig);
+// adminRoute.put('/security/config', updateSecurityConfig);
 
-// deposit management
-adminRoute.route('/deposits', depositRoutes);
+// Store Bank Account Management Routes
+adminRoute.get('/store-accounts', listStoreAccounts);
+adminRoute.get('/store-accounts/:id', getStoreAccount);
+adminRoute.post('/store-accounts', createStoreAccount);
+adminRoute.put('/store-accounts/:id', updateStoreAccount);
+adminRoute.patch('/store-accounts/:id/toggle-status', toggleStoreAccountStatus);
+adminRoute.delete('/store-accounts/:id', deleteStoreAccount);
+
+// Deposit Request Management Routes
+adminRoute.get('/deposits/requests', listDepositRequests);
+adminRoute.get('/deposits/requests/:id', getDepositRequest);
+adminRoute.post('/deposits/requests/:id/approve', approveDepositRequest);
+adminRoute.post('/deposits/requests/:id/reject', rejectDepositRequest);
+
+// Statistics Routes
+adminRoute.get('/deposits/statistics', getDepositStatistics);

@@ -10,7 +10,7 @@ import { asyncHandler } from '../../middleware/errorHandler';
 import { z } from 'zod';
 import { db } from '../../db';
 import { orders, users, products } from '../../db/schemas';
-import { eq, desc, and, count, like, gte, lte, sum } from 'drizzle-orm';
+import { eq, desc, and, count, like, gte, lte, sum, sql } from 'drizzle-orm';
 
 // Admin order filter schema
 const adminOrderFilterSchema = z.object({
@@ -60,6 +60,7 @@ export const getAllOrders = asyncHandler(async (c: Context) => {
   }
 
   // Join with users and products for search and additional info
+  // Note: orders.productId stores UUID as varchar, need to cast for JOIN
   let query_builder = db
     .select({
       id: orders.id,
@@ -78,7 +79,7 @@ export const getAllOrders = asyncHandler(async (c: Context) => {
     })
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))
-    .leftJoin(products, eq(orders.productId, products.id));
+    .leftJoin(products, sql`${orders.productId}::uuid = ${products.id}`);
 
   // Add search condition
   if (search) {
@@ -147,12 +148,12 @@ export const getOrderDetails = asyncHandler(async (c: Context) => {
     })
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))
-    .leftJoin(products, eq(orders.productId, products.id))
+    .leftJoin(products, sql`${orders.productId}::uuid = ${products.id}`)
     .where(eq(orders.id, orderId))
     .limit(1);
 
   if (!orderDetails) {
-    const { body, status } = ok('Order not found', null);
+    const { body } = ok('Order not found', null);
     return c.json(body, 404);
   }
 
@@ -176,7 +177,7 @@ export const updateOrderStatus = asyncHandler(async (c: Context) => {
     .limit(1);
 
   if (!currentOrder) {
-    const { body: responseBody, status } = ok('Order not found', null);
+    const { body: responseBody } = ok('Order not found', null);
     return c.json(responseBody, 404);
   }
 
@@ -267,7 +268,7 @@ export const getOrderStatistics = asyncHandler(async (c: Context) => {
       totalRevenue: sum(orders.amount),
     })
     .from(orders)
-    .leftJoin(products, eq(orders.productId, products.id))
+    .leftJoin(products, sql`${orders.productId}::uuid = ${products.id}`)
     .where(
       and(
         gte(orders.createdAt, since),
@@ -311,7 +312,7 @@ export const triggerOrderCallback = asyncHandler(async (c: Context) => {
     .limit(1);
 
   if (!order) {
-    const { body: responseBody, status } = ok('Order not found', null);
+    const { body: responseBody } = ok('Order not found', null);
     return c.json(responseBody, 404);
   }
 
