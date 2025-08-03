@@ -1,71 +1,519 @@
 # 🏪 Digi-Pocket Thailand
 
-> A comprehensive digital marketplace platform for Thailand, built with modern web technologies and enterprise-grade security.
+**A comprehensive digital marketplace API for Thailand's e-commerce ecosystem**
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
 [![Hono](https://img.shields.io/badge/Hono-E36002?style=for-the-badge&logo=hono&logoColor=white)](https://hono.dev/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Drizzle](https://img.shields.io/badge/Drizzle-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black)](https://orm.drizzle.team/)
 
-## 🌟 Features
+## 🌟 Overview
 
-### 🔐 **Security & Authentication**
-- **Multi-factor Authentication** with JWT tokens and session management
-- **Advanced Security Utils** with 54+ security functions tested
-- **Device Tracking & Fingerprinting** for fraud prevention
-- **Rate Limiting & Account Lockout** protection
-- **IP Analysis & Geolocation** tracking
-- **CSRF Protection** and input sanitization
+Digi-Pocket Thailand is a robust, scalable digital marketplace API designed specifically for the Thai e-commerce market. Built with modern technologies and security-first principles, it provides a comprehensive platform for digital product sales, user management, and financial transactions.
 
-### 🛒 **E-commerce Platform**
-- **Multi-category Products** (App Premium, Games, Mobile, Cash Cards)
-- **Dynamic Pricing** with VIP and agent pricing tiers
-- **Real-time Stock Management** with upstream integration
-- **Order Processing** with callback handling
-- **Wallet System** with deposit and withdrawal features
+### **🚀 Tech Stack**
 
-### 👥 **User Management**
-- **Role-based Access Control** (Customer, Agent, Admin)
-- **Comprehensive User Profiles** with activity tracking
-- **Session Management** with concurrent session support
-- **Account Status Management** (Active, Suspended, Banned)
+**Runtime & Framework**
+- **[Bun](https://bun.sh/)** - Ultra-fast JavaScript runtime and package manager
+- **[Hono](https://hono.dev/)** - Lightweight, fast web framework
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe development
 
-### 📊 **Analytics & Monitoring**
-- **User Activity Logging** with detailed metadata
-- **Security Alert System** for suspicious activities
-- **Performance Monitoring** with comprehensive test suite
-- **Device & Browser Analytics** for user insights
+**Database & Caching**
+- **[PostgreSQL](https://www.postgresql.org/)** - Primary database with ACID compliance
+- **[Drizzle ORM](https://orm.drizzle.team/)** - Type-safe database operations
+- **[Redis](https://redis.io/)** - High-performance caching and session storage
 
-## 🏗️ Architecture
+**Security & Validation**
+- **[Zod](https://zod.dev/)** - Runtime type validation and parsing
+- **[bcrypt](https://github.com/kelektiv/node.bcrypt.js)** - Password hashing
+- **[jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)** - JWT authentication
 
-### **Backend Stack**
-- **Runtime**: [Bun](https://bun.sh/) - Ultra-fast JavaScript runtime
-- **Framework**: [Hono](https://hono.dev/) - Lightweight web framework
-- **Database**: [PostgreSQL](https://www.postgresql.org/) with [Drizzle ORM](https://orm.drizzle.team/)
-- **Cache**: [Redis](https://redis.io/) for session and data caching
-- **Validation**: [Zod](https://zod.dev/) for type-safe validation
+**DevOps & Deployment**
+- **[Docker](https://www.docker.com/)** - Containerization
+- **[Docker Compose](https://docs.docker.com/compose/)** - Multi-container orchestration
 
-### **Security Features**
-- **Password Hashing**: Bcrypt with salt rounds
-- **JWT Tokens**: Secure token-based authentication
-- **Session Management**: Redis-backed session storage
-- **Input Sanitization**: XSS and injection prevention
-- **Rate Limiting**: IP-based request throttling
+### **🔥 Key Features**
 
-### **Database Schema**
+🔐 **Enterprise-Grade Security**
+- JWT-based authentication with session management
+- Role-based access control (RBAC) with granular permissions
+- Advanced security monitoring and threat detection
+- Account lockout protection and intelligent rate limiting
+- Comprehensive audit logging and activity tracking
+- Device fingerprinting and suspicious activity detection
+
+💰 **Advanced Digital Wallet System**
+- Real-time balance management with atomic transactions
+- Secure transaction processing with double-entry bookkeeping
+- Slip-based deposit verification system with image processing
+- Multi-bank account support for seamless deposits
+- Transaction history with detailed analytics
+- Automated reconciliation and fraud detection
+
+🛒 **Comprehensive E-commerce Platform**
+- Multi-category product catalog (Apps, Games, Mobile Top-ups, Cash Cards)
+- Dynamic pricing engine with real-time inventory management
+- Order processing with upstream service integration (Peamsub API)
+- Automated fulfillment workflows with callback handling
+- Comprehensive order tracking and status management
+- Product synchronization with external providers
+
+👥 **Advanced User Management**
+- Multi-role user system (Customer, Admin, Super Admin)
+- Comprehensive profile management and user preferences
+- Device and location tracking with geolocation
+- Real-time activity monitoring and behavioral analytics
+- Intelligent notification system with preferences
+- User session management across multiple devices
+
+📊 **Powerful Admin Dashboard**
+- Real-time analytics and business intelligence
+- User lifecycle and order management
+- Security monitoring with alert system
+- Financial transaction oversight and reporting
+- System configuration and feature toggles
+- Comprehensive audit trails and compliance reporting
+
+📢 **Communication System**
+- System-wide announcement management
+- User notification preferences and delivery
+- Real-time alerts and status updates
+- Multi-channel notification support
+
+## 🚀 Quick Start
+
+### **Prerequisites**
+- [Bun](https://bun.sh/) >= 1.0.0
+- [PostgreSQL](https://www.postgresql.org/) >= 14
+- [Redis](https://redis.io/) >= 6.0
+- [Docker](https://www.docker.com/) (optional)
+
+### **Installation**
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/THXNXKXT/digi-pocket-th.git
+cd digi-pocket-th
 ```
-├── users (Authentication & Profiles)
-├── user_sessions (Session Management)
-├── user_activity_logs (Activity Tracking)
-├── security_alerts (Security Monitoring)
-├── products (Product Catalog)
-├── product_prices (Dynamic Pricing)
-├── orders (Order Management)
-├── wallets (Financial Transactions)
-└── announcements (System Notifications)
+
+2. **Install dependencies**
+```bash
+cd backend
+bun install
 ```
+
+3. **Environment Setup**
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+4. **Database Setup**
+```bash
+# Start PostgreSQL and Redis (using Docker)
+docker-compose up -d postgres redis
+
+# Run database migrations
+bun run db:push
+
+# Seed initial data (optional)
+bun run db:seed
+```
+
+5. **Start Development Server**
+```bash
+bun run dev
+```
+
+The API will be available at `http://localhost:3031`
+
+### **Docker Setup**
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f backend
+```
+
+## 📚 API Documentation
+
+### **Interactive Documentation**
+- **Swagger UI**: `http://localhost:3031/swagger`
+- **OpenAPI JSON**: `http://localhost:3031/doc`
+- **Health Check**: `http://localhost:3031/`
+
+### **Complete API Endpoints (74+ endpoints)**
+
+#### **🌐 System Routes**
+```http
+GET  /                    # API status check
+GET  /doc                 # OpenAPI JSON documentation
+GET  /swagger             # Swagger UI interface
+```
+
+#### **🔐 Authentication (3 endpoints)**
+```http
+POST /auth/register       # User registration
+POST /auth/login          # User login
+POST /auth/logout         # User logout (Auth Required)
+```
+
+#### **📦 Products (5 endpoints)**
+```http
+GET /products/app-premium # List app premium products
+GET /products/preorder    # List preorder products
+GET /products/game        # List game products
+GET /products/mobile      # List mobile products
+GET /products/cashcard    # List cash card products
+```
+
+#### **🛒 Orders (7 endpoints)**
+```http
+# Customer Orders (Auth Required)
+POST   /orders                  # Create new order
+GET    /orders                  # Get user's orders (with pagination)
+GET    /orders/price/:productId # Get product price
+GET    /orders/:id              # Get specific order details
+PATCH  /orders/:id/cancel       # Cancel order
+
+# Public Webhooks (No Auth)
+POST /orders/callback           # Peamsub payment callback
+POST /orders/preorder-callback  # Preorder payment callback
+```
+
+#### **💰 Wallet System (11 endpoints)**
+```http
+# Basic Wallet (Auth Required)
+GET  /wallet/balance      # Get wallet balance
+GET  /wallet/transactions # List wallet transactions
+POST /wallet/deposit      # Basic deposit (legacy)
+POST /wallet/withdraw     # Withdraw funds
+
+# Slip Deposit System (Auth Required)
+GET    /wallet/deposit/accounts                    # Get available store accounts
+POST   /wallet/deposit/request                     # Create deposit request
+POST   /wallet/deposit/request/:requestId/slip     # Upload slip image
+GET    /wallet/deposit/request/:requestId/status   # Check deposit status
+GET    /wallet/deposit/requests                    # Get pending requests
+GET    /wallet/deposit/request/:requestId          # Resume specific request
+DELETE /wallet/deposit/request/:requestId          # Cancel request
+```
+
+#### **📢 Announcements (6 endpoints)**
+```http
+# Public Routes (Optional Auth)
+GET /announcements        # List published announcements
+GET /announcements/:id    # Get specific announcement
+
+# Authenticated Routes
+GET /announcements/unread-count                    # Get unread count
+GET /announcements/notifications/preferences       # Get notification preferences
+PUT /announcements/notifications/preferences       # Update notification preferences
+GET /announcements/notifications                   # Get user notifications
+```
+
+#### **👤 User Tracking (4 endpoints)**
+```http
+# All require authentication
+GET /user/tracking/devices          # Get user's device history
+GET /user/tracking/locations        # Get user's IP/location history
+GET /user/tracking/patterns         # Get user's login patterns
+GET /user/tracking/security-summary # Get security summary
+```
+
+### **👨‍💼 Admin Routes (35+ endpoints)**
+**Authentication:** Required (Admin Role)
+
+#### **User Management (6 endpoints)**
+```http
+GET    /admin/users           # List all users
+POST   /admin/users           # Create new user
+GET    /admin/users/:id       # Get specific user
+PATCH  /admin/users/:id       # Update user
+DELETE /admin/users/:id       # Delete user
+```
+
+#### **Product Management (2 endpoints)**
+```http
+PATCH  /admin/products/:id    # Update product
+DELETE /admin/products/:id    # Delete product
+```
+
+#### **Order Management (5 endpoints)**
+```http
+GET   /admin/orders              # List all orders (with filters)
+GET   /admin/orders/statistics   # Get order statistics
+GET   /admin/orders/:id          # Get order details
+PATCH /admin/orders/:id/status   # Update order status
+POST  /admin/orders/:id/callback # Trigger order callback
+```
+
+#### **Announcement Management (8 endpoints)**
+```http
+GET    /admin/announcements           # List all announcements
+POST   /admin/announcements           # Create announcement
+GET    /admin/announcements/:id       # Get announcement details
+PATCH  /admin/announcements/:id       # Update announcement
+DELETE /admin/announcements/:id       # Delete announcement
+POST   /admin/announcements/:id/publish # Publish announcement
+POST   /admin/announcements/:id/archive # Archive announcement
+GET    /admin/announcements/analytics # Get announcement analytics
+```
+
+#### **Security Monitoring (9 endpoints)**
+```http
+GET  /admin/security/stats              # Get security statistics
+GET  /admin/security/events             # Get security events
+GET  /admin/security/alerts             # Get security alerts
+POST /admin/security/alerts/:alertId/resolve # Resolve security alert
+GET  /admin/security/activity           # Get all activity logs
+POST /admin/security/unlock/:userId     # Unlock user account
+GET  /admin/security/users/:userId/logs # Get user activity logs
+```
+
+#### **Deposit Management (12 endpoints)**
+```http
+# Store Account Management
+GET    /admin/deposits/store-accounts                    # List store accounts
+GET    /admin/deposits/store-accounts/:id                # Get store account
+POST   /admin/deposits/store-accounts                    # Create store account
+PUT    /admin/deposits/store-accounts/:id                # Update store account
+PATCH  /admin/deposits/store-accounts/:id/toggle-status  # Toggle account status
+DELETE /admin/deposits/store-accounts/:id                # Delete store account
+
+# Deposit Request Management
+GET  /admin/deposits/requests              # List deposit requests (with filters)
+GET  /admin/deposits/requests/:id          # Get deposit request details
+POST /admin/deposits/requests/:id/approve  # Approve deposit request
+POST /admin/deposits/requests/:id/reject   # Reject deposit request
+GET  /admin/deposits/statistics            # Get deposit statistics
+```
+
+## 🛡️ Security Architecture
+
+### **Authentication & Authorization**
+- **JWT Tokens**: Secure token-based authentication with refresh rotation
+- **Session Management**: Redis-backed session storage with TTL
+- **Role-Based Access Control**: Granular permission system
+- **Account Lockout**: Protection against brute force attacks
+- **Device Fingerprinting**: Advanced device identification
+
+### **Input Validation & Sanitization**
+- **Zod Validation**: Runtime type checking and validation
+- **SQL Injection Prevention**: Parameterized queries with Drizzle ORM
+- **XSS Protection**: Input sanitization and output encoding
+- **CSRF Protection**: Cross-site request forgery prevention
+- **Rate Limiting**: Intelligent request throttling and abuse prevention
+
+### **Security Monitoring**
+- **Activity Logging**: Comprehensive user activity tracking
+- **Threat Detection**: Real-time suspicious activity monitoring
+- **Security Alerts**: Automated alert system for security events
+- **Audit Trails**: Complete forensic logging for compliance
+- **IP Analysis**: Geolocation and reputation checking
+
+## 📊 Database Schema
+
+### **Core Tables**
+```sql
+-- User Management
+users                    # User accounts and authentication
+user_sessions           # Active session management
+user_activity_logs      # Comprehensive activity tracking
+security_alerts         # Security monitoring and alerts
+
+-- E-commerce
+products               # Product catalog and metadata
+product_prices         # Dynamic pricing and inventory
+orders                 # Order processing and fulfillment
+
+-- Financial
+wallets               # User wallet balances
+wallet_transactions   # Transaction history
+deposit_requests      # Slip-based deposit system
+store_bank_accounts   # Multi-bank account support
+slip_records          # Deposit slip verification
+
+-- Communication
+announcements         # System announcements
+announcement_reads    # Read status tracking
+notifications         # User notifications
+user_notification_preferences # Notification settings
+```
+
+## 🧪 Testing
+
+### **Comprehensive Test Suite**
+- **54+ Security Functions** tested and validated
+- **Authentication System** with complete coverage
+- **Device Tracking** and fingerprinting tests
+- **E-commerce Workflows** end-to-end testing
+- **Performance Testing** with load simulation
+
+### **Running Tests**
+```bash
+# Run all tests
+bun run test:all
+
+# Specific test suites
+bun run test:auth      # Authentication tests
+bun run test:security  # Security tests
+bun run test:device    # Device tracking tests
+bun run test:ecommerce # E-commerce tests
+bun run test:performance # Performance tests
+
+# Watch mode
+bun run test:watch
+
+# Coverage report
+bun run test:coverage
+```
+
+## 🚀 Deployment
+
+### **Production Setup**
+```bash
+# Build for production
+bun run build
+
+# Start production server
+bun run start
+
+# Using Docker
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### **Environment Variables**
+```env
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/digi_pocket
+REDIS_URL=redis://localhost:6379
+
+# Security
+JWT_SECRET=your-super-secret-jwt-key
+BCRYPT_ROUNDS=12
+
+# API
+PORT=3031
+NODE_ENV=production
+
+# External Services
+PEAMSUB_API_URL=https://api.peamsub.com
+PEAMSUB_API_KEY=your-api-key
+PEAMSUB_USERNAME=your-username
+PEAMSUB_PASSWORD=your-password
+```
+
+## 📁 Project Structure
+
+```
+backend/
+├── src/
+│   ├── app.ts              # Main application entry
+│   ├── controllers/        # Request handlers
+│   │   ├── admin/          # Admin-specific controllers
+│   │   ├── auth.controller.ts
+│   │   ├── order.controller.ts
+│   │   ├── wallet.controller.ts
+│   │   └── ...
+│   ├── services/           # Business logic
+│   │   ├── auth.service.ts
+│   │   ├── security.service.ts
+│   │   ├── wallet.service.ts
+│   │   └── ...
+│   ├── middleware/         # Custom middleware
+│   │   ├── auth.ts
+│   │   ├── admin.ts
+│   │   ├── errorHandler.ts
+│   │   └── ...
+│   ├── routes/             # API routes
+│   │   ├── admin.route.ts
+│   │   ├── auth.route.ts
+│   │   ├── order.route.ts
+│   │   └── ...
+│   ├── db/                 # Database layer
+│   │   ├── schemas/        # Drizzle schemas
+│   │   ├── migrations/     # Database migrations
+│   │   └── index.ts
+│   ├── utils/              # Utility functions
+│   │   ├── security.utils.ts
+│   │   ├── validation.ts
+│   │   └── ...
+│   ├── types/              # TypeScript definitions
+│   ├── config/             # Configuration files
+│   ├── docs/               # API documentation
+│   └── workers/            # Background workers
+├── tests/                  # Test suites
+├── docker/                 # Docker configurations
+├── package.json
+├── tsconfig.json
+├── drizzle.config.ts
+└── docker-compose.yml
+```
+
+## 🔧 Available Scripts
+
+```bash
+# Development
+bun run dev          # Start development server with hot reload
+bun run start        # Start production server
+bun run worker       # Start background worker
+bun run product-sync # Start product sync worker
+
+# Database
+bun run db:push      # Push schema changes to database
+bun run db:clear     # Clear all data (keep schema)
+bun run db:reset     # Reset database (drop + recreate)
+bun run db:fresh     # Reset and push schema
+
+# Testing
+bun run test         # Run all tests
+bun run test:all     # Run comprehensive test suite
+bun run test:auth    # Run authentication tests
+bun run test:security # Run security tests
+bun run test:watch   # Run tests in watch mode
+bun run test:coverage # Run tests with coverage
+
+# Utilities
+bun run lint         # Run ESLint
+bun run type-check   # Run TypeScript type checking
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Bun](https://bun.sh/) for the amazing JavaScript runtime
+- [Hono](https://hono.dev/) for the lightweight web framework
+- [Drizzle ORM](https://orm.drizzle.team/) for type-safe database operations
+- [Zod](https://zod.dev/) for runtime type validation
+- [Redis](https://redis.io/) for high-performance caching
+- [PostgreSQL](https://www.postgresql.org/) for reliable data storage
+
+## 📞 Support
+
+- **Documentation**: [API Docs](http://localhost:3031/swagger)
+- **Issues**: [GitHub Issues](https://github.com/THXNXKXT/digi-pocket-th/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/THXNXKXT/digi-pocket-th/discussions)
+
+---
+
+**Built with ❤️ for the Thai digital marketplace ecosystem**
 
 ## 🚀 Quick Start
 
