@@ -94,34 +94,34 @@ export default function ProductsPage() {
         </div>
 
         {/* Product Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {productCategories.map((category) => {
             const IconComponent = category.icon
 
             const CategoryCard = (
               <div
-                className={`bg-white rounded-xl p-6 shadow-sm border border-gray-100 transition-all cursor-pointer group ${
+                className={`bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 transition-all cursor-pointer group h-full ${
                   category.available
                     ? 'hover:shadow-md'
                     : 'opacity-60 cursor-not-allowed'
                 }`}
               >
-                <div className="flex flex-col items-center text-center">
-                  <div className={`w-16 h-16 ${category.color} rounded-xl flex items-center justify-center mb-4 transition-transform ${
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className={`w-12 h-12 md:w-16 md:h-16 ${category.color} rounded-xl flex items-center justify-center mb-3 md:mb-4 transition-transform ${
                     category.available ? 'group-hover:scale-110' : ''
                   }`}>
-                    <IconComponent className="w-8 h-8 text-white" />
+                    <IconComponent className="w-6 h-6 md:w-8 md:h-8 text-white" />
                   </div>
 
-                  <ThaiHeading level={3} className="text-lg mb-2">
+                  <ThaiHeading level={3} className="text-base md:text-lg mb-2 flex-grow flex items-center">
                     {category.name}
                   </ThaiHeading>
 
-                  <ThaiText className="text-sm text-gray-600 mb-3">
+                  <ThaiText className="text-xs md:text-sm text-gray-600 mb-3 line-clamp-2">
                     {category.description}
                   </ThaiText>
 
-                  <div className={`px-3 py-1 rounded-full ${
+                  <div className={`px-2 md:px-3 py-1 rounded-full mt-auto ${
                     category.available ? 'bg-gray-100' : 'bg-gray-50'
                   }`}>
                     <ThaiText className={`text-xs font-medium ${

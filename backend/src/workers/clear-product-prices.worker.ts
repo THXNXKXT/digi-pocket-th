@@ -14,18 +14,24 @@ import { sql } from 'drizzle-orm';
 interface ClearOptions {
   // ลบทั้งหมด
   all?: boolean;
-  
+
   // ลบตาม product ID
   productId?: string;
-  
+
+  // ลบตามประเภทสินค้า
+  productType?: string;
+
   // ลบข้อมูลเก่ากว่า X วัน
   olderThanDays?: number;
-  
+
   // เก็บข้อมูลล่าสุด X แถวต่อ product (ลบที่เหลือ)
   keepLatest?: number;
-  
+
   // ลบข้อมูลก่อนวันที่กำหนด
   beforeDate?: Date;
+
+  // ลบข้อมูลเก่าตามประเภท (เก็บเฉพาะล่าสุด)
+  clearOldByType?: { productType: string; keepLatest?: number };
 }
 
 export class ProductPricesCleaner {
@@ -52,11 +58,11 @@ export class ProductPricesCleaner {
    */
   static async clearByProductId(productId: string): Promise<{ deletedCount: number }> {
     console.log(`[clear-product-prices] Clearing prices for product: ${productId}`);
-    
+
     try {
       const result = await db.delete(productPrices)
         .where(sql`product_id = ${productId}`);
-      
+
       const deletedCount = result.rowCount || 0;
       console.log(`[clear-product-prices] Deleted ${deletedCount} records for product ${productId}`);
       return { deletedCount };
@@ -67,24 +73,163 @@ export class ProductPricesCleaner {
   }
 
   /**
+   * ลบข้อมูลของสินค้าตามประเภท (type)
+   */
+  static async clearByProductType(productType: string): Promise<{ deletedCount: number }> {
+    console.log(`[clear-product-prices] Clearing prices for product type: ${productType}`);
+
+    try {
+      const query = sql`
+        DELETE FROM product_prices
+        WHERE product_id IN (
+          SELECT id FROM products WHERE type = ${productType}
+        )
+      `;
+
+      const result = await db.execute(query);
+      const deletedCount = result.rowCount || 0;
+
+      console.log(`[clear-product-prices] Deleted ${deletedCount} records for product type ${productType}`);
+      return { deletedCount };
+    } catch (error) {
+      console.error(`[clear-product-prices] Error clearing product type ${productType}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * ลบข้อมูลเก่าของสินค้าตามประเภท (เก็บเฉพาะข้อมูลล่าสุด)
+   */
+  static async clearOldPricesByType(productType: string, keepLatest: number = 1): Promise<{ deletedCount: number }> {
+    console.log(`[clear-product-prices] Clearing old prices for type ${productType}, keeping latest ${keepLatest} records per product`);
+
+    try {
+      // ขั้นตอนที่ 1: ดูจำนวนข้อมูลก่อนลบ
+      const countQuery = sql`
+        SELECT COUNT(*) as total_count
+        FROM product_prices pp
+        JOIN products p ON pp.product_id = p.id
+        WHERE p.type = ${productType}
+      `;
+
+      const countResult = await db.execute(countQuery);
+      const totalBefore = Number(countResult.rows[0]?.total_count || 0);
+      console.log(`[clear-product-prices] Found ${totalBefore} total records for type ${productType}`);
+
+      if (totalBefore === 0) {
+        console.log(`[clear-product-prices] No records found for type ${productType}`);
+        return { deletedCount: 0 };
+      }
+
+      // ขั้นตอนที่ 2: ลบข้อมูลเก่า (แบบ step-by-step)
+      const deleteQuery = sql`
+        DELETE FROM product_prices
+        WHERE id IN (
+          SELECT pp.id
+          FROM product_prices pp
+          JOIN products p ON pp.product_id = p.id
+          WHERE p.type = ${productType}
+            AND pp.id NOT IN (
+              SELECT DISTINCT ON (pp2.product_id) pp2.id
+              FROM product_prices pp2
+              JOIN products p2 ON pp2.product_id = p2.id
+              WHERE p2.type = ${productType}
+              ORDER BY pp2.product_id, pp2.fetched_at DESC, pp2.id DESC
+            )
+        )
+      `;
+
+      const result = await db.execute(deleteQuery);
+      const deletedCount = result.rowCount || 0;
+
+      // ขั้นตอนที่ 3: ตรวจสอบผลลัพธ์
+      const countAfterResult = await db.execute(countQuery);
+      const totalAfter = Number(countAfterResult.rows[0]?.total_count || 0);
+
+      console.log(`[clear-product-prices] Deleted ${deletedCount} old records for type ${productType}`);
+      console.log(`[clear-product-prices] Records before: ${totalBefore}, after: ${totalAfter}, kept latest ${keepLatest} per product`);
+
+      return { deletedCount };
+    } catch (error) {
+      console.error(`[clear-product-prices] Error clearing old prices for type ${productType}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * ลบข้อมูลเก่ากว่าจำนวนวันที่กำหนด
    */
   static async clearOlderThan(days: number): Promise<{ deletedCount: number }> {
     console.log(`[clear-product-prices] Clearing prices older than ${days} days`);
-    
+
     try {
       const query = sql`
-        DELETE FROM product_prices 
+        DELETE FROM product_prices
         WHERE fetched_at < now() - interval '${sql.raw(days.toString())} days'
       `;
-      
+
       const result = await db.execute(query);
       const deletedCount = result.rowCount || 0;
-      
+
       console.log(`[clear-product-prices] Deleted ${deletedCount} records older than ${days} days`);
       return { deletedCount };
     } catch (error) {
       console.error(`[clear-product-prices] Error clearing old data:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * ลบข้อมูลเก่ากว่าจำนวนชั่วโมงที่กำหนด
+   */
+  static async clearOlderThanHours(hours: number): Promise<{ deletedCount: number }> {
+    console.log(`[clear-product-prices] Clearing prices older than ${hours} hours`);
+
+    try {
+      const query = sql`
+        DELETE FROM product_prices
+        WHERE fetched_at < now() - interval '${sql.raw(hours.toString())} hours'
+      `;
+
+      const result = await db.execute(query);
+      const deletedCount = result.rowCount || 0;
+
+      console.log(`[clear-product-prices] Deleted ${deletedCount} records older than ${hours} hours`);
+      return { deletedCount };
+    } catch (error) {
+      console.error(`[clear-product-prices] Error clearing old data (hours):`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * ลบข้อมูลเก่ากว่า 1 ชั่วโมง (สำหรับ automated task)
+   */
+  static async clearOldPrices(): Promise<{ deletedCount: number }> {
+    return this.clearOlderThanHours(1);
+  }
+
+  /**
+   * เคลียร์ข้อมูลทั้งหมดของประเภทแล้วให้ sync ใหม่ (สำหรับแก้ปัญหา info field)
+   */
+  static async clearAllPricesForType(productType: string): Promise<{ deletedCount: number }> {
+    console.log(`[clear-product-prices] Clearing ALL price data for type: ${productType}`);
+
+    try {
+      const query = sql`
+        DELETE FROM product_prices
+        WHERE product_id IN (
+          SELECT id FROM products WHERE type = ${productType}
+        )
+      `;
+
+      const result = await db.execute(query);
+      const deletedCount = result.rowCount || 0;
+
+      console.log(`[clear-product-prices] Deleted ALL ${deletedCount} records for product type ${productType}`);
+      return { deletedCount };
+    } catch (error) {
+      console.error(`[clear-product-prices] Error clearing all prices for type ${productType}:`, error);
       throw error;
     }
   }
@@ -142,23 +287,34 @@ export class ProductPricesCleaner {
     if (options.all) {
       return this.clearAll();
     }
-    
+
     if (options.productId) {
       return this.clearByProductId(options.productId);
     }
-    
+
+    if (options.productType) {
+      return this.clearByProductType(options.productType);
+    }
+
+    if (options.clearOldByType) {
+      return this.clearOldPricesByType(
+        options.clearOldByType.productType,
+        options.clearOldByType.keepLatest || 1
+      );
+    }
+
     if (options.olderThanDays) {
       return this.clearOlderThan(options.olderThanDays);
     }
-    
+
     if (options.keepLatest) {
       return this.keepLatestOnly(options.keepLatest);
     }
-    
+
     if (options.beforeDate) {
       return this.clearBeforeDate(options.beforeDate);
     }
-    
+
     throw new Error('No clear option specified');
   }
 
@@ -241,6 +397,34 @@ async function main() {
         }
         await ProductPricesCleaner.clearByProductId(productId);
         break;
+
+      case 'type':
+        const productType = args[1];
+        if (!productType) {
+          console.error('Usage: bun run clear-product-prices.worker.ts type <product-type>');
+          process.exit(1);
+        }
+        await ProductPricesCleaner.clearByProductType(productType);
+        break;
+
+      case 'type-all':
+        const typeForAll = args[1];
+        if (!typeForAll) {
+          console.error('Usage: bun run clear-product-prices.worker.ts type-all <product-type>');
+          process.exit(1);
+        }
+        await ProductPricesCleaner.clearAllPricesForType(typeForAll);
+        break;
+
+      case 'type-old':
+        const typeForOld = args[1];
+        const keepCountForType = parseInt(args[2]) || 1;
+        if (!typeForOld) {
+          console.error('Usage: bun run clear-product-prices.worker.ts type-old <product-type> [keep-count]');
+          process.exit(1);
+        }
+        await ProductPricesCleaner.clearOldPricesByType(typeForOld, keepCountForType);
+        break;
         
       case 'older':
         const days = parseInt(args[1]);
@@ -281,15 +465,21 @@ Usage:
   bun run src/workers/clear-product-prices.worker.ts <command> [options]
 
 Commands:
-  all                    - Clear all product prices
-  product <product-id>   - Clear prices for specific product
-  older <days>          - Clear prices older than X days
-  keep <count>          - Keep only latest X records per product
-  stats                 - Show statistics
+  all                         - Clear all product prices
+  product <product-id>        - Clear prices for specific product
+  type <product-type>         - Clear all prices for product type
+  type-all <product-type>     - Clear ALL prices for product type (force clean)
+  type-old <type> [keep]      - Clear old prices for type (keep latest N)
+  older <days>               - Clear prices older than X days
+  keep <count>               - Keep only latest X records per product
+  stats                      - Show statistics
 
 Examples:
   bun run src/workers/clear-product-prices.worker.ts all
   bun run src/workers/clear-product-prices.worker.ts product abc-123
+  bun run src/workers/clear-product-prices.worker.ts type game
+  bun run src/workers/clear-product-prices.worker.ts type-all game
+  bun run src/workers/clear-product-prices.worker.ts type-old game 1
   bun run src/workers/clear-product-prices.worker.ts older 30
   bun run src/workers/clear-product-prices.worker.ts keep 5
   bun run src/workers/clear-product-prices.worker.ts stats

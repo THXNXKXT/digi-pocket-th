@@ -2,7 +2,8 @@ import { callPeamsub } from './upstream';
 import { redis } from '../config/redis';
 import { db } from '../db';
 import { products, productPrices } from '../db/schemas';
-import { eq, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
+import { ProductPricesCleaner } from '../workers/clear-product-prices.worker';
 
 type UpstreamItem = Record<string, any>;
 
@@ -55,22 +56,30 @@ function mapPrice(item: UpstreamItem, productId: string, type: ProductType) {
   // กรณี app-premium หากไม่มี stock ให้ข้ามไม่บันทึก
   if (type === 'app-premium' && (item.stock === null || item.stock === undefined)) return null;
 
+  // Field mapping debug ถูกย้ายไปใน transaction loop แล้ว
+
   const priceVipVal = item.pricevip ?? item.priceVip ?? item.price_vip ?? null;
   const recommendedVal = item.recommendedPrice ?? item.recommended_price ?? null;
   const agentPriceVal = item.agent_price ?? item.agentPrice ?? null;
 
+  // ตรวจสอบว่า price และ recommended ไม่เป็น null หรือ undefined
+  const priceValue = item.price ?? item.currentPrice ?? 0;
+  const discountValue = item.discount ?? 0;
+
   const base = {
     productId,
-    price: String(item.price ?? item.currentPrice ?? 0),
+    price: String(priceValue),
     priceVip: priceVipVal !== null ? String(priceVipVal) : null,
     agentPrice: agentPriceVal !== null ? String(agentPriceVal) : null,
-    discount: String(item.discount ?? 0),
+    discount: String(discountValue),
     stock: item.stock !== undefined && item.stock !== null ? Number(item.stock) : null,
   } as any;
 
   if (type !== 'app-premium') {
     base.recommended = recommendedVal !== null ? String(recommendedVal) : null;
   }
+
+  // Debug logging ถูกย้ายไปใน transaction loop แล้ว
 
   return base;
 }
@@ -80,11 +89,14 @@ async function queryProducts(type: ProductType) {
     const res = await db.execute(sql`
       SELECT p.*, pr.price, pr.price_vip AS "priceVip", pr.agent_price AS "agentPrice", pr.discount, pr.stock
       FROM products p
-      /* แถวล่าสุดที่ stock > 0 (ใช้ทั้งราคาและ stock จากแถวเดียวกัน) */
-      LEFT JOIN LATERAL (
+      /* แถวล่าสุดที่ stock > 0 และมีราคา (ใช้ทั้งราคาและ stock จากแถวเดียวกัน) */
+      INNER JOIN LATERAL (
         SELECT price, price_vip, agent_price, discount, stock
         FROM product_prices
-        WHERE product_id = p.id AND stock IS NOT NULL AND stock >= 0
+        WHERE product_id = p.id
+          AND stock IS NOT NULL
+          AND stock >= 0
+          AND price IS NOT NULL
         ORDER BY fetched_at DESC, id DESC
         LIMIT 1
       ) pr ON true
@@ -106,14 +118,15 @@ async function queryProducts(type: ProductType) {
     return queryCashcard();
   }
 
-  // default types
+  // default types - แสดงเฉพาะสินค้าที่มีราคา
   const res = await db.execute(sql`
     SELECT p.*, pr.price, pr.price_vip AS "priceVip", pr.agent_price AS "agentPrice", pr.discount, pr.stock
     FROM products p
-    LEFT JOIN LATERAL (
+    INNER JOIN LATERAL (
       SELECT *
       FROM product_prices pr2
       WHERE pr2.product_id = p.id
+        AND pr2.price IS NOT NULL
       ORDER BY pr2.fetched_at DESC, pr2.id DESC
       LIMIT 1
     ) pr ON true
@@ -140,10 +153,12 @@ function queryGame() {
              p.img,
              p.format_id
       FROM   products p
-      JOIN LATERAL (
+      INNER JOIN LATERAL (
         SELECT recommended, price, discount
         FROM   product_prices
         WHERE  product_id = p.id
+          AND price IS NOT NULL
+          AND recommended IS NOT NULL
         ORDER  BY fetched_at DESC, id DESC
         LIMIT 1
       ) pr ON true
@@ -167,10 +182,12 @@ function queryMobile() {
              p.img,
              p.format_id
       FROM   products p
-      JOIN LATERAL (
+      INNER JOIN LATERAL (
         SELECT recommended, price, discount
         FROM   product_prices
         WHERE  product_id = p.id
+          AND price IS NOT NULL
+          AND recommended IS NOT NULL
         ORDER  BY fetched_at DESC, id DESC
         LIMIT 1
       ) pr ON true
@@ -194,10 +211,12 @@ function queryCashcard() {
              p.img,
              p.format_id
       FROM   products p
-      JOIN LATERAL (
+      INNER JOIN LATERAL (
         SELECT recommended, price, discount
         FROM   product_prices
         WHERE  product_id = p.id
+          AND price IS NOT NULL
+          AND recommended IS NOT NULL
         ORDER  BY fetched_at DESC, id DESC
         LIMIT 1
       ) pr ON true
@@ -234,42 +253,114 @@ export const productService = {
     const items: UpstreamItem[] = await callPeamsub(pathMap[type]);
     if (!items?.length) return [];
 
-    /* --------------------------- 4. upsert DB ----------------------------- */
+    console.log(`[product-service] Fetched ${items.length} items from upstream for type: ${type}`);
+
+    /* ------------------------ 4. clear old data --------------------------- */
+    // เคลียร์ข้อมูลราคาเก่าของประเภทสินค้านี้ทั้งหมดก่อนบันทึกข้อมูลใหม่
+    try {
+      console.log(`[product-service] Clearing ALL price data for type: ${type}`);
+      const clearResult = await ProductPricesCleaner.clearAllPricesForType(type);
+      console.log(`[product-service] Cleared ${clearResult.deletedCount} ALL price records for type: ${type}`);
+    } catch (error) {
+      console.error(`[product-service] Failed to clear price data for type ${type}:`, error);
+      // ไม่ throw error เพื่อให้ sync ดำเนินต่อไปได้
+    }
+
+    /* --------------------------- 5. upsert DB ----------------------------- */
+    console.log(`[product-service] Starting transaction for ${items.length} ${type} items`);
+
+    const startTime = Date.now();
+    let processedCount = 0;
+    let errorCount = 0;
+
     await db.transaction(async (tx) => {
-      for (const raw of items) {
-        const meta = mapMeta(raw, type);
+      for (let i = 0; i < items.length; i++) {
+        // Progress logging ทุก 50 รายการ
+        if (i > 0 && i % 50 === 0) {
+          const elapsed = Date.now() - startTime;
+          const rate = (i / elapsed * 1000).toFixed(1);
+          console.log(`[product-service] Progress: ${i}/${items.length} items (${rate} items/sec)`);
+        }
 
-        await tx
-          .insert(products)
-          .values(meta)
-          .onConflictDoUpdate({
-            target: [products.upstreamId, products.type],
-            set: {
-              name: sql`excluded.name`,
-              img: sql`excluded.img`,
-              description: sql`excluded.description`,
-              category: sql`excluded.category`,
-              formatId: sql`excluded.format_id`,
-              extra: sql`excluded.extra`,
-              updatedAt: sql`now()`,
-            },
-          });
+        try {
+          const raw = items[i];
+          const meta = mapMeta(raw, type);
 
-        const [{ id }] = await tx
-          .select({ id: products.id })
-          .from(products)
-          .where(eq(products.upstreamId, meta.upstreamId));
+          // ตรวจสอบว่า upstreamId ไม่ว่าง
+          if (!meta.upstreamId) {
+            errorCount++;
+            continue;
+          }
 
-        const price = mapPrice(raw, id, type);
-        if (price) {
-          await tx.insert(productPrices).values(price);
+          // ใช้ RETURNING เพื่อให้แน่ใจว่าได้ product ID ที่ถูกต้อง
+          const [upsertedProduct] = await tx
+            .insert(products)
+            .values(meta)
+            .onConflictDoUpdate({
+              target: [products.upstreamId, products.type],
+              set: {
+                name: sql`excluded.name`,
+                img: sql`excluded.img`,
+                description: sql`excluded.description`,
+                category: sql`excluded.category`,
+                formatId: sql`excluded.format_id`,
+                extra: sql`excluded.extra`,
+                updatedAt: sql`now()`,
+              },
+            })
+            .returning({ id: products.id, upstreamId: products.upstreamId });
+
+          // ตรวจสอบว่าได้ product ID กลับมา
+          if (!upsertedProduct?.id) {
+            errorCount++;
+            continue;
+          }
+
+          const price = mapPrice(raw, upsertedProduct.id, type);
+          if (price) {
+            await tx.insert(productPrices).values(price);
+          }
+
+          processedCount++;
+
+        } catch (error) {
+          errorCount++;
+          console.error(`[product-service] Error processing item ${i}:`, error);
         }
       }
     });
 
-    /* ----------------------- 5. query + cache again ----------------------- */
+    const totalTime = Date.now() - startTime;
+    const avgRate = (processedCount / totalTime * 1000).toFixed(1);
+    console.log(`[product-service] Transaction completed for ${type}: ${processedCount}/${items.length} processed, ${errorCount} errors, ${totalTime}ms (${avgRate} items/sec)`);
+
+    /* ----------------------- 6. query + cache again ----------------------- */
     const refreshed = await queryProducts(type);
+
+    console.log(`[product-service] ✅ ${type} sync completed: ${refreshed.length} products available`);
+
     await redis.set(cacheKey, JSON.stringify(refreshed), 'EX', CACHE_TTL_SECONDS);
     return refreshed;
   },
-}; 
+
+  /**
+   * Admin function: ดูสินค้าทั้งหมด รวมทั้งที่ไม่มีราคา
+   * สำหรับ admin dashboard เพื่อตรวจสอบข้อมูล
+   */
+  async listAll(type: ProductType) {
+    const res = await db.execute(sql`
+      SELECT p.*, pr.price, pr.price_vip AS "priceVip", pr.agent_price AS "agentPrice", pr.discount, pr.stock
+      FROM products p
+      LEFT JOIN LATERAL (
+        SELECT price, price_vip, agent_price, discount, stock
+        FROM product_prices
+        WHERE product_id = p.id
+        ORDER BY fetched_at DESC, id DESC
+        LIMIT 1
+      ) pr ON true
+      WHERE p.type = ${type}
+      ORDER BY p.upstream_id::numeric ASC;
+    `);
+    return (res as any).rows ?? res;
+  },
+};

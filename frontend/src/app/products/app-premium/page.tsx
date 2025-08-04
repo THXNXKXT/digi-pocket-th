@@ -105,27 +105,27 @@ export default function AppPremiumCategoriesPage() {
         {/* Categories Grid */}
         {appPremiumCategories.length > 0 ? (
           <section>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {appPremiumCategories.map((category) => (
                 <Card
                   key={category.name}
                   className="group hover:shadow-lg transition-shadow"
                 >
-                  <CardHeader className="text-center pb-4">
-                    <div className="flex justify-center mb-4">
+                  <CardHeader className="text-center pb-3 md:pb-4">
+                    <div className="flex justify-center mb-3 md:mb-4">
                       <ProductImage
                         src={category.previewProduct.img}
                         alt={category.previewProduct.name}
                         fallbackIcon={getProductFallbackIcon(category.previewProduct)}
-                        size="xl"
+                        size="lg"
                         className="rounded-lg"
                       />
                     </div>
 
-                    <CardTitle className="text-xl font-thai mb-2">
+                    <CardTitle className="text-base md:text-xl font-thai mb-1 md:mb-2 line-clamp-2">
                       {category.name}
                     </CardTitle>
-                    <ThaiText className="text-gray-500">
+                    <ThaiText className="text-sm md:text-base text-gray-500">
                       {category.productCount} สินค้า
                     </ThaiText>
                   </CardHeader>

@@ -172,7 +172,7 @@ export default function AppPremiumCategoryPage() {
                             handleProductClick(product)
                           }}
                         >
-                          {isOutOfStock ? 'สินค้าหมด' : 'ดูรายละเอียด'}
+                          {isOutOfStock ? 'สินค้าหมด' : 'ซื้อ'}
                         </Button>
                       </div>
                     </CardContent>

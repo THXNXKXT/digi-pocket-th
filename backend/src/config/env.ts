@@ -5,6 +5,7 @@ export const env = {
   baseUrl: process.env.BASE_URL || '',
   jwtSecret: process.env.JWT_SECRET || 'change_me',
   peamsubKey: process.env.PEAMSUB_KEY || '',
+  peamsubUrl: process.env.PEAMSUB_URL || 'https://api.peamsub24hr.com',
   databaseUrl: process.env.DATABASE_URL || '',
   redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
 

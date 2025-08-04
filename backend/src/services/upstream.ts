@@ -1,8 +1,6 @@
 import { env } from '../config/env';
 import { Buffer } from 'node:buffer';
 
-const BASE_URL = 'https://api.peamsub24hr.com';
-
 function getAuthHeader() {
   const encoded = Buffer.from(env.peamsubKey).toString('base64');
   return { Authorization: `Basic ${encoded}` };
@@ -13,7 +11,7 @@ export async function callPeamsub<T = any>(
   method: 'GET' | 'POST' = 'GET',
   body?: Record<string, unknown>
 ): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${env.peamsubUrl}${path}`, {
     method,
     headers: {
       ...getAuthHeader(),

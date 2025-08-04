@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth';
 import { adminMiddleware } from '../middleware/admin';
 import { listUsers, createUser, getUser, updateUser, updateUserStatus, deleteUser } from '../controllers/admin/users.controller';
-import { updateProduct, deleteProduct } from '../controllers/admin/products.controller';
+import { updateProduct, deleteProduct, listAllProducts } from '../controllers/admin/products.controller';
 import {
   listAdminAnnouncements,
   createAnnouncement,
@@ -64,6 +64,7 @@ adminRoute.get('/users/:userId/activity', getUserActivityLogs);
 adminRoute.post('/users/:userId/unlock', unlockUserAccount);
 
 // product management
+adminRoute.get('/products/:type/all', listAllProducts); // ดูสินค้าทั้งหมด รวมที่ไม่มีราคา
 adminRoute.patch('/products/:id', updateProduct);
 adminRoute.delete('/products/:id', deleteProduct);
 

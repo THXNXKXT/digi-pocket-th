@@ -62,16 +62,6 @@ services:
       - db
       - redis
 
-  prune_prices:
-    build: ./backend
-    command: bun run src/workers/prune-prices.worker.ts
-    restart: unless-stopped
-    env_file:
-      - ./backend/env.docker
-    depends_on:
-      - db
-      - redis
-
   pgweb:
     image: sosedoff/pgweb
     restart: unless-stopped

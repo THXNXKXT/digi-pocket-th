@@ -117,17 +117,22 @@ export default function GameCategoriesPage() {
         {/* Categories Grid */}
         {gameCategories.length > 0 ? (
           <section>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {gameCategories.map((category) => (
                 <Card
                   key={category.name}
                   className="group hover:shadow-lg transition-shadow cursor-pointer"
                 >
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-thai text-center">
+                  <CardHeader className="pb-3 text-center">
+                    <div className="flex justify-center mb-3">
+                      <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-2 md:p-3 rounded-full">
+                        <PuzzlePieceIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                      </div>
+                    </div>
+                    <CardTitle className="text-base md:text-lg font-thai mb-1 line-clamp-2">
                       {category.name}
                     </CardTitle>
-                    <ThaiText className="text-sm text-gray-500 text-center">
+                    <ThaiText className="text-sm text-gray-500">
                       {category.productCount} สินค้า
                     </ThaiText>
                   </CardHeader>
