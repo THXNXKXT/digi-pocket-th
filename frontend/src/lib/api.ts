@@ -94,15 +94,38 @@ api.interceptors.response.use(
         default:
           console.error('API Error:', data?.message)
       }
+
+      // Create a more user-friendly error
+      let errorMessage = data?.message || `HTTP ${status}: ${error.message}`
+
+      // Handle specific error structures
+      if (data?.errors) {
+        if (data.errors.details?.error) {
+          errorMessage = data.errors.details.error
+        } else if (data.errors.error) {
+          errorMessage = data.errors.error
+        } else if (typeof data.errors === 'string') {
+          errorMessage = data.errors
+        }
+      }
+
+      const userFriendlyError = new Error(errorMessage)
+
+      // Preserve the response data for further handling
+      ;(userFriendlyError as any).response = error.response
+      ;(userFriendlyError as any).status = status
+      ;(userFriendlyError as any).errorData = data
+
+      return Promise.reject(userFriendlyError)
     } else if (error.request) {
       // Network error
       console.error('Network error:', error.message)
+      return Promise.reject(new Error('Network error - please check your connection'))
     } else {
       // Other error
       console.error('Error:', error.message)
+      return Promise.reject(new Error(error.message || 'An unexpected error occurred'))
     }
-
-    return Promise.reject(error)
   }
 )
 
@@ -113,8 +136,15 @@ export async function apiCall<T>(
   try {
     const response = await apiFunction()
     return response.data.data
-  } catch (error) {
-    throw error
+  } catch (error: any) {
+    // Error is already processed by axios interceptor
+    // Create a clean error without stack trace for user-facing errors
+    const cleanError = new Error(error.message || 'An unexpected error occurred')
+
+    // Remove stack trace for cleaner error display
+    cleanError.stack = undefined
+
+    throw cleanError
   }
 }
 

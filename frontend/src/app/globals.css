@@ -101,6 +101,15 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    word-break: break-word;
+  }
+
+  .line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
   }
 
   /* Thai font support */
@@ -137,5 +146,51 @@
 
   .btn-error {
     @apply bg-error-600 text-white hover:bg-error-700 focus:ring-error-500;
+  }
+
+  /* Game detail page specific styles */
+  .price-option-card {
+    @apply transition-all duration-200 border-2 cursor-pointer;
+  }
+
+  .price-option-card:hover {
+    @apply border-gray-300 shadow-sm;
+  }
+
+  .price-option-card.selected {
+    @apply border-primary-500 bg-primary-50 shadow-md;
+  }
+
+  .price-option-card.recommended {
+    @apply ring-2 ring-primary-200;
+  }
+
+  /* Filter icon animation */
+  .filter-icon-container {
+    @apply transition-all duration-200;
+  }
+
+  .filter-icon-container:hover {
+    @apply scale-105;
+  }
+
+  /* Warning card styles */
+  .warning-card {
+    @apply border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50 to-orange-50;
+  }
+
+  /* Mobile-first responsive design */
+  @media (max-width: 640px) {
+    .container-custom {
+      @apply px-3;
+    }
+
+    .price-option-card {
+      @apply text-sm;
+    }
+
+    .warning-card {
+      @apply border-l-2;
+    }
   }
 }

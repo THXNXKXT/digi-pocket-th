@@ -90,6 +90,7 @@ export async function authMiddleware(c: Context, next: Next) {
 
     // Set user in context
     c.set('user', payload);
+    c.set('userId', payload.sub);
 
     // Track login information
     await trackLoginInfo(payload.sub, {

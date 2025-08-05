@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ShoppingBagIcon,
   WalletIcon,
@@ -10,6 +11,8 @@ import {
   SparklesIcon,
   GiftIcon
 } from '@heroicons/react/24/outline'
+import { useAuth } from '@/contexts/AuthContext'
+import { useState } from 'react'
 import { ThaiHeading, ThaiText } from '@/components/ui/typography'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -17,7 +20,6 @@ import { ProductCategoryIcons, CategorySectionSkeleton, ProductCategoryError, Pr
 import { ProductImage, getProductFallbackIcon } from '@/components/ui/product-image'
 import { useProducts, useResponsiveProductCount } from '@/hooks'
 import { formatCurrency, cn } from '@/lib/utils'
-import { useState } from 'react'
 
 // Category configuration
 const categories = [
@@ -59,6 +61,9 @@ export default function HomePage() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  // Auth state
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
+
   const handleProductClick = (product: any) => {
     setSelectedProduct(product)
     setIsModalOpen(true)
@@ -76,8 +81,15 @@ export default function HomePage() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <WalletIcon className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 rounded-lg overflow-hidden">
+                <Image
+                  src="/logos/digi-pocket-logo1.png"
+                  alt="Digi Pocket Logo"
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-contain"
+                  priority
+                />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 font-thai">Digi-Pocket</h1>
@@ -85,12 +97,18 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Link
-                href="/login"
-                className="text-sm text-gray-600 hover:text-gray-900 font-medium font-thai px-2 py-1"
-              >
-                เข้าสู่ระบบ
-              </Link>
+              {authLoading ? (
+                // Loading state - show skeleton
+                <div className="w-16 h-6 bg-gray-200 rounded animate-pulse"></div>
+              ) : !isAuthenticated ? (
+                // Guest user UI - only show login button when not authenticated
+                <Link
+                  href="/login"
+                  className="text-sm text-gray-600 hover:text-gray-900 font-medium font-thai px-2 py-1"
+                >
+                  เข้าสู่ระบบ
+                </Link>
+              ) : null}
             </div>
           </div>
         </div>
@@ -125,6 +143,20 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="py-8 md:py-20">
         <div className="container-custom text-center px-4">
+          {/* Hero Logo */}
+          <div className="flex justify-center mb-6 md:mb-8">
+            <div className="w-40 h-40 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96">
+              <Image
+                src="/logos/digi-pocket-logo1.png"
+                alt="Digi Pocket Logo"
+                width={384}
+                height={384}
+                className="w-full h-full object-contain"
+                priority
+              />
+            </div>
+          </div>
+
           <ThaiHeading level={1} className="mb-4 md:mb-6 text-3xl md:text-5xl lg:text-6xl">
             ตลาดดิจิทัลครบครัน
             <span className="text-primary-600 block">สำหรับคนไทย</span>

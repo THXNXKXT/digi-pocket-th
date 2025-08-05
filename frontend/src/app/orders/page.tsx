@@ -1,4 +1,7 @@
+'use client'
+
 import { ThaiHeading, ThaiText } from '@/components/ui/typography'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { 
   ClipboardDocumentListIcon,
   CheckCircleIcon,
@@ -71,7 +74,8 @@ const statusConfig = {
 
 export default function OrdersPage() {
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <ProtectedRoute>
+      <div className="bg-gray-50 min-h-screen">
       {/* Mobile Header */}
       <div className="md:hidden bg-white border-b sticky top-0 z-30">
         <div className="px-4 py-4">
@@ -225,5 +229,6 @@ export default function OrdersPage() {
         )}
       </div>
     </div>
+    </ProtectedRoute>
   )
 }

@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { WalletIcon, UserIcon, BellIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { BellIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { ThaiText } from '@/components/ui/typography'
 import { Button } from '@/components/ui/button'
 import { Avatar, getInitials } from '@/components/ui/avatar'
-import { useAuthState } from '@/hooks/useAuthState'
+import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect, useRef } from 'react'
 
 const navItems = [
@@ -19,7 +20,7 @@ const navItems = [
 
 export default function DesktopHeader() {
   const pathname = usePathname()
-  const { isAuthenticated, user, logout } = useAuthState()
+  const { isAuthenticated, user, logout, isLoading } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -38,7 +39,7 @@ export default function DesktopHeader() {
   }, [showUserMenu])
 
   // Don't show on auth pages
-  if (pathname.includes('/login') || pathname.includes('/register')) {
+  if (pathname === '/login' || pathname === '/register' || pathname.includes('/auth/')) {
     return null
   }
 
@@ -48,11 +49,18 @@ export default function DesktopHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-              <WalletIcon className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-lg overflow-hidden">
+              <Image
+                src="/logos/digi-pocket-logo1.png"
+                alt="Digi Pocket Logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 font-thai">Digi-Pocket</h1>
+              <h1 className="text-xl font-bold text-gray-900 font-thai">Digi Pocket</h1>
               <p className="text-sm text-gray-500 font-thai">Thailand</p>
             </div>
           </Link>
@@ -82,7 +90,13 @@ export default function DesktopHeader() {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
-            {isAuthenticated ? (
+            {isLoading ? (
+              // Loading state - show skeleton
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            ) : isAuthenticated ? (
               // Authenticated user UI
               <>
                 {/* Notifications */}

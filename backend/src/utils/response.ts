@@ -34,4 +34,24 @@ export function fail(message: string, status = 400, errors?: unknown): { body: A
     },
     status,
   };
-} 
+}
+
+export function badRequest(message: string, errors?: unknown): { body: ApiError; status: number } {
+  return fail(message, 400, errors);
+}
+
+export function unauthorized(message: string, errors?: unknown): { body: ApiError; status: number } {
+  return fail(message, 401, errors);
+}
+
+export function forbidden(message: string, errors?: unknown): { body: ApiError; status: number } {
+  return fail(message, 403, errors);
+}
+
+export function notFound(message: string, errors?: unknown): { body: ApiError; status: number } {
+  return fail(message, 404, errors);
+}
+
+export function internalServerError(message: string, errors?: unknown): { body: ApiError; status: number } {
+  return fail(message, 500, errors);
+}

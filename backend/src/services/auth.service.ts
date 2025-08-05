@@ -70,7 +70,36 @@ export const authService = {
     // Log registration activity
     await activityService.logRegistration(user.id, c);
 
-    return signToken(user);
+    // Create new session
+    const sessionToken = await securityService.createSession(user.id, c);
+
+    // Track device and IP information
+    await this.trackLoginInfo(user.id, c);
+
+    // Generate JWT with session info
+    const token = jwt.sign(
+      {
+        sub: user.id,
+        username: user.username,
+        role: user.role,
+        sessionToken
+      },
+      env.jwtSecret,
+      { expiresIn: "12h" }
+    );
+
+    // Return user data without sensitive information
+    const userData = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString()
+    };
+
+    return { token, sessionToken, user: userData };
   },
 
   async login(username: string, password: string, c: Context) {
@@ -134,7 +163,18 @@ export const authService = {
       { expiresIn: "12h" }
     );
 
-    return { token, sessionToken };
+    // Return user data without sensitive information
+    const userData = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString()
+    };
+
+    return { token, sessionToken, user: userData };
   },
 
   async logout(userId: string, c: Context, sessionToken?: string) {

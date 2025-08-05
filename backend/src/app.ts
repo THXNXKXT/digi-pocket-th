@@ -13,12 +13,15 @@ import { authRoute } from './routes/auth.route';
 import { walletRoute } from './routes/wallet.route';
 import { orderRoute } from './routes/order.route';
 import { adminRoute } from './routes/admin.route';
+import { profileRoutes } from './routes/profile.routes';
+import { depositRoutes } from './routes/deposit.routes';
 
 import { announcementRoute } from './routes/announcement.route';
 import userTrackingRoutes from './routes/user-tracking.routes';
 import { swaggerUI } from '@hono/swagger-ui';
 import { openApiDoc } from './docs/openapi';
 import { fail, ok } from './utils/response';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 
 const app = new Hono();
@@ -99,11 +102,16 @@ app.route('/products', productRoute);
 app.route('/auth', authRoute);
 app.route('/wallet', walletRoute);
 app.route('/orders', orderRoute);
+app.route('/profile', profileRoutes);
+app.route('/wallet/deposit', depositRoutes);
 
 app.route('/admin', adminRoute);
 app.route('/announcements', announcementRoute);
 app.route('/user/tracking', userTrackingRoutes);
 
+// Error handlers
+app.onError(errorHandler);
+app.notFound(notFoundHandler);
 
 export default {
   port: env.port,

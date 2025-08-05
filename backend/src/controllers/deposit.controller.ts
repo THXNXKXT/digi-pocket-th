@@ -2,7 +2,7 @@ import { Context } from 'hono';
 import { db } from '../db';
 import { depositRequests, storeBankAccounts, slipRecords } from '../db/schemas/deposit';
 import { wallets, walletTransactions } from '../db/schemas/wallet';
-import { eq, and, gte, desc } from 'drizzle-orm';
+import { eq, and, gte, desc, count } from 'drizzle-orm';
 import { 
   createDepositRequestSchema,
   uploadSlipSchema
@@ -23,14 +23,18 @@ import { validateInput } from '../utils/validation';
 import { asyncHandler } from '../middleware/errorHandler';
 import { DepositRecoveryService } from '../services/deposit-recovery.service';
 import { SlipVerificationService } from '../services/slip-verification.service';
+import { MockSlipVerificationService } from '../services/mock-slip-verification.service';
 import { walletService } from '../services/wallet.service';
 import { env } from '../config/env';
 
 const recoveryService = new DepositRecoveryService();
-const verificationService = new SlipVerificationService(
-  env.slip2goApiUrl,
-  env.slip2goApiKey
-);
+
+// Use Mock Service in development, real service in production
+const verificationService = env.nodeEnv === 'development'
+  ? new MockSlipVerificationService()
+  : new SlipVerificationService(env.slip2goApiUrl, env.slip2goApiKey);
+
+console.log(`🔧 Environment: ${env.nodeEnv}, Using ${env.nodeEnv === 'development' ? 'Mock' : 'Real'} Slip Verification Service`);
 
 /**
  * Get available store bank accounts for deposit
@@ -384,6 +388,98 @@ export const checkDepositStatus = asyncHandler(async (c: Context) => {
 
   const { body, status } = ok('Deposit status retrieved successfully', response);
   return c.json(body, status as any);
+});
+
+/**
+ * Get all deposit requests for the user
+ */
+export const getUserDeposits = asyncHandler(async (c: Context) => {
+  try {
+    const user = c.get('user');
+    const limit = Number(c.req.query('limit') || '20');
+    const page = Number(c.req.query('page') || '1');
+    const status = c.req.query('status');
+
+    console.log('getUserDeposits called with:', { userId: user.sub, limit, page, status });
+
+    const offset = (page - 1) * limit;
+
+    // Build query conditions
+    let whereConditions = eq(depositRequests.userId, user.sub);
+
+    if (status && status !== 'all') {
+      whereConditions = and(whereConditions, eq(depositRequests.status, status));
+    }
+
+    console.log('Query conditions built successfully');
+
+    // Get deposits with related data
+    console.log('Executing deposits query...');
+    const deposits = await db
+      .select({
+        id: depositRequests.id,
+        amount: depositRequests.amount,
+        status: depositRequests.status,
+        storeAccountId: depositRequests.storeAccountId,
+        expiresAt: depositRequests.expiresAt,
+        createdAt: depositRequests.createdAt,
+        updatedAt: depositRequests.updatedAt,
+        // Store account info
+        bankName: storeBankAccounts.bankName,
+        accountNumber: storeBankAccounts.accountNumber,
+        accountName: storeBankAccounts.accountName,
+        promptpayNumber: storeBankAccounts.promptpayNumber,
+        // Slip info (if exists) - using correct column names
+        slipId: slipRecords.id,
+        slipTransactionId: slipRecords.transactionId,
+        slipStatus: slipRecords.status,
+        slipCreatedAt: slipRecords.createdAt,
+        slipVerificationScore: slipRecords.verificationScore
+      })
+      .from(depositRequests)
+      .leftJoin(storeBankAccounts, eq(depositRequests.storeAccountId, storeBankAccounts.id))
+      .leftJoin(slipRecords, eq(depositRequests.id, slipRecords.depositRequestId))
+      .where(whereConditions)
+      .orderBy(desc(depositRequests.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    console.log('Deposits query completed, found:', deposits.length, 'records');
+
+    // Get total count for pagination
+    console.log('Executing count query...');
+    const [totalResult] = await db
+      .select({ count: count() })
+      .from(depositRequests)
+      .where(whereConditions);
+
+    console.log('Count query completed:', totalResult);
+
+    const total = totalResult?.count || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const responseData = {
+      deposits,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    };
+
+    console.log('Response data prepared:', { depositsCount: deposits.length, pagination: responseData.pagination });
+
+    const { body, status: responseStatus } = ok('User deposits retrieved successfully', responseData);
+
+    return c.json(body, responseStatus as any);
+
+  } catch (error) {
+    console.error('Error in getUserDeposits:', error);
+    throw error; // Re-throw to be handled by asyncHandler
+  }
 });
 
 /**

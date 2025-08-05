@@ -32,14 +32,18 @@ export const register = asyncHandler(async (c: Context) => {
     c
   );
 
-  const token = await authService.register(
+  const result = await authService.register(
     sanitizedData.username,
     sanitizedData.email,
     sanitizedData.password,
     c
   );
 
-  const { body: responseBody, status } = ok('Registration successful', { token });
+  const { body: responseBody, status } = ok('Registration successful', {
+    token: result.token,
+    sessionToken: result.sessionToken,
+    user: result.user
+  });
   return c.json(responseBody, status as any);
 });
 
@@ -70,7 +74,8 @@ export const login = asyncHandler(async (c: Context) => {
 
   const { body: responseBody, status } = ok('Login successful', {
     token: result.token,
-    sessionToken: result.sessionToken
+    sessionToken: result.sessionToken,
+    user: result.user
   });
   return c.json(responseBody, status as any);
 });

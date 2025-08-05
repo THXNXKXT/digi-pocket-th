@@ -5,6 +5,7 @@ import {
   createDepositRequest,
   uploadSlip,
   checkDepositStatus,
+  getUserDeposits,
   getPendingRequests,
   resumeDepositRequest,
   cancelDepositRequest
@@ -20,6 +21,9 @@ depositRoutes.get('/accounts', getAvailableAccounts);
 depositRoutes.post('/request', createDepositRequest);
 depositRoutes.post('/request/:requestId/slip', uploadSlip);
 depositRoutes.get('/request/:requestId/status', checkDepositStatus);
+
+// User Deposit History
+depositRoutes.get('/', getUserDeposits);
 
 // Recovery Routes
 depositRoutes.get('/requests', getPendingRequests);

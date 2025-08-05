@@ -1,21 +1,18 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import Link from 'next/link'
 import { ThaiHeading, ThaiText } from '@/components/ui/typography'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ProductDetailModal } from '@/components/ui/modal'
 import { ProductImage, getProductFallbackIcon } from '@/components/ui/product-image'
 import { CategorySectionSkeleton, ProductCategoryError } from '@/components/ui'
 import { useProductsByCategory } from '@/hooks/useProducts'
-import { formatCurrency, cn } from '@/lib/utils'
+
 import { HomeIcon, ArrowRightIcon, PuzzlePieceIcon } from '@heroicons/react/24/outline'
 
 export default function GameCategoriesPage() {
   const { data: gameProducts, isLoading, error, refetch } = useProductsByCategory('game')
-  const [selectedProduct, setSelectedProduct] = useState<any>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Group products by category and get one preview product per category
   const gameCategories = useMemo(() => {
@@ -42,15 +39,7 @@ export default function GameCategoriesPage() {
     )
   }, [gameProducts])
 
-  const handleProductClick = (product: any) => {
-    setSelectedProduct(product)
-    setIsModalOpen(true)
-  }
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setSelectedProduct(null)
-  }
 
   if (isLoading) {
     return (
@@ -124,11 +113,6 @@ export default function GameCategoriesPage() {
                   className="group hover:shadow-lg transition-shadow cursor-pointer"
                 >
                   <CardHeader className="pb-3 text-center">
-                    <div className="flex justify-center mb-3">
-                      <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-2 md:p-3 rounded-full">
-                        <PuzzlePieceIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                      </div>
-                    </div>
                     <CardTitle className="text-base md:text-lg font-thai mb-1 line-clamp-2">
                       {category.name}
                     </CardTitle>
@@ -139,10 +123,7 @@ export default function GameCategoriesPage() {
                   
                   <CardContent className="pt-0">
                     {/* Preview Product */}
-                    <div 
-                      className="text-center mb-4 cursor-pointer"
-                      onClick={() => handleProductClick(category.previewProduct)}
-                    >
+                    <div className="text-center mb-4">
                       <div className="mb-3 transition-transform group-hover:scale-105 flex justify-center">
                         <ProductImage
                           src={category.previewProduct.img}
@@ -155,13 +136,6 @@ export default function GameCategoriesPage() {
                       <ThaiText className="font-medium text-sm mb-2 line-clamp-2">
                         {category.previewProduct.name}
                       </ThaiText>
-                      
-                      <ThaiText className="font-bold text-primary-600 text-sm">
-                        {formatCurrency(
-                          category.previewProduct.recommendedPrice || 
-                          category.previewProduct.price
-                        )}
-                      </ThaiText>
                     </div>
 
                     {/* View Category Button */}
@@ -173,7 +147,7 @@ export default function GameCategoriesPage() {
                         href={`/products/game/${encodeURIComponent(category.name)}`}
                         className="inline-flex items-center justify-center gap-2"
                       >
-                        <span>ดูสินค้าทั้งหมด</span>
+                        <span>เติมเกม</span>
                         <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </Link>
                     </Button>
@@ -206,12 +180,6 @@ export default function GameCategoriesPage() {
           </div>
         )}
 
-        {/* Product Detail Modal */}
-        <ProductDetailModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          product={selectedProduct}
-        />
       </div>
     </div>
   )
